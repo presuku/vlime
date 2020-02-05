@@ -1480,9 +1480,15 @@ function! s:ShowAsyncResult(conn, result)
 endfunction
 
 function! s:SendToREPLInputComplete(conn, content)
-    call a:conn.ui.OnWriteString(a:conn, "--\n", {'name': 'REPL-SEP', 'package': 'KEYWORD'})
-    call a:conn.WithThread({'name': 'REPL-THREAD', 'package': 'KEYWORD'},
-                \ function(a:conn.ListenerEval, [a:content, function('s:OnListenerEvalComplete')]))
+    try
+      call a:conn.WithThread({'name': 'REPL-THREAD', 'package': 'KEYWORD'},
+                  \ function(a:conn.ListenerEval, [a:content, function('s:OnListenerEvalComplete')]))
+      call a:conn.ui.OnWriteString(a:conn, "--\n", {'name': 'REPL-SEP', 'package': 'KEYWORD'})
+    catch /^Vim\%((\a\+)\)\=:E906/
+      echom "Channel was already closed."
+      call vlime#connection#Close(a:conn)
+      return
+    endtry
 endfunction
 
 function! s:CompileInputComplete(conn, win, policy, content)
