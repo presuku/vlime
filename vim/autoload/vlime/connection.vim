@@ -11,7 +11,8 @@ function! vlime#connection#New(...)
     if a:0 > 0
         let conn_name = a:1
     else
-        let conn_name = 'Vlime Connection ' . g:vlime_next_conn_id
+        let base_conn_name = get(g:, 'vlime_default_conn_name', 'Vlime Connection')
+        let conn_name =  l:base_conn_name . ' ' . g:vlime_next_conn_id
     endif
     let conn = vlime#New(
                 \ {
